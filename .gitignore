@@ -1,0 +1,20 @@
+# Backend (Rust)
+target/
+Cargo.lock
+*.rs.bk
+
+# Node (Frontend)
+node_modules/
+dist/
+.next/
+build/
+
+# OS files
+.DS_Store
+*.log
+
+# IDE files
+.idea/
+.vscode/
+*.suo
+*.sw?
