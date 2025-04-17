@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./components/customButtons/buttonStyles.css";
+
+@theme {
+    --font-family-sans: "Inter", sans-serif;
+    
+    --color-gray-500: #737373;
+  }
+@config "../tailwind.config.js";

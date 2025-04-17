@@ -1,0 +1,32 @@
+.custom-login-gradient {
+    background: linear-gradient(to right, #00D0FF 0%, #2E4CFF 18%, #5D3AFF 65%, #D015FF 100%);
+}
+  
+.custom-createAcc-gradient {
+    background: conic-gradient(
+        from 140deg,
+        #00BBFF 0deg,
+        #00BBFF 100deg,
+        #008cff 120deg,
+        #005EFF 150deg,
+        #7F2FFF 170deg,
+        #A100FF 195deg,
+        #A100FF 250deg,
+        #8400ff 280deg,
+        #5168FF 300deg,
+        #2FA8FF 330deg,
+        #00BBFF 360deg
+        );
+}
+  
+.glow-on-hover {
+    transition: all 1s ease-out;
+}
+  
+.glow-on-hover:hover {
+    box-shadow:
+        0 0 3px #00D0FFAA,
+        0 0 8px #2E4CFF99,
+        0 0 15px #D015FF66;
+    transition: all 0.2s ease-in;
+}
