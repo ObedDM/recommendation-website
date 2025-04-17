@@ -18,3 +18,5 @@ build/
 .vscode/
 *.suo
 *.sw?
+
+.env*
