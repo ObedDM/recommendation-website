@@ -8,3 +8,7 @@ pub fn generate_password(password: &str) -> Result<String, String> {
         Err(e) => Err(format!("Failed to hash password: {}", e))
     }
 }
+
+pub fn check_password(password: &str) -> Result<String, String> {
+    todo()
+}
