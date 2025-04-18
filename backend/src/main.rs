@@ -8,6 +8,8 @@ use tower_http::cors::{CorsLayer, Any};
 use tower::ServiceBuilder;
 use http::{Method, header};
 
+mod passwordEncryption;
+
 #[tokio::main]
 async fn main() {
     // Open .env
@@ -41,7 +43,8 @@ async fn main() {
 
     // Create routes
     let app = Router::new()
-        .route("/auth/login", post(post_credentials))
+        .route("auth/signup", post(register_user))
+        .route("/auth/login", post(auth_user))
         .layer(cors_layer);
 
     tokio::select! {
@@ -53,10 +56,11 @@ async fn main() {
 #[derive(Deserialize)]
 struct UserCredentials {
     username: String,
+    email: String,
     password: String
 }
 
-async fn post_credentials(user: Json<UserCredentials>) -> Result<(StatusCode, String), (StatusCode, String)> {
+async fn auth_user(user: Json<UserCredentials>) -> Result<(StatusCode, String), (StatusCode, String)> {
     
     Ok((
         StatusCode::OK,
@@ -65,4 +69,15 @@ async fn post_credentials(user: Json<UserCredentials>) -> Result<(StatusCode, St
                 }
         } ).to_string()
     ))
+}
+
+async fn register_user(user: Json<UserCredentials>) -> Result<(StatusCode, String), (StatusCode, String)> {
+    todo!(); 
+
+    /*
+    1.- Get user information (via JSON)
+    2.- Verify if the username, email dont exist in the database (return err)
+    3.- call passwordEncryption::generate_password() to create a hash for the password
+    4.- insert user, email, password into database (return Ok)
+    */
 }
