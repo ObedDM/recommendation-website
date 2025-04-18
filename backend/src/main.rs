@@ -1,9 +1,12 @@
 use tokio::{fs::File, io::AsyncWriteExt, net::TcpListener, signal, sync::oneshot};
 use dotenvy::dotenv;
 use std::{path::Path, env::var};
-use axum::{http::StatusCode, routing::post, serve, Router};
+use axum::{http::StatusCode, routing::{get, post}, serve, Router, Json};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tower_http::cors::{CorsLayer, Any};
+use tower::ServiceBuilder;
+use http::{Method, header};
 
 #[tokio::main]
 async fn main() {
@@ -30,15 +33,21 @@ async fn main() {
     let listener = TcpListener::bind(SERVER_ADDRESS).await.expect("Could not create TcpListener");
     println!("Listening on: {}", listener.local_addr().unwrap());
 
+    // CORS
+    let cors_layer = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(vec![Method::GET, Method::POST])
+        .allow_headers([header::CONTENT_TYPE]);
+
     // Create routes
     let app = Router::new()
-            .route("/auth/login", post(post_credentials));
+        .route("/auth/login", post(post_credentials))
+        .layer(cors_layer);
 
     tokio::select! {
         _ = serve(listener, app) => {},
         _ = shutdown_rx => { print!("Shutting down...") }
     }
-    
 }
 
 #[derive(Deserialize)]
@@ -48,5 +57,12 @@ struct UserCredentials {
 }
 
 async fn post_credentials(user: Json<UserCredentials>) -> Result<(StatusCode, String), (StatusCode, String)> {
-    todo!();
+    
+    Ok((
+        StatusCode::OK,
+        json!( {"credentials": {
+                    "user": user.username, "password": user.password
+                }
+        } ).to_string()
+    ))
 }
