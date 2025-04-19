@@ -44,6 +44,22 @@ pub async fn signup(Json(user): Json<UserCredentials>) -> Result<(StatusCode, Js
                 Json(json!({ "message": "Unexpected error ocurred. Please try againt later" }))
             ))
         },
+
+        Err(AuthError::UsernameAlreadyExists(e)) => {
+            log::warn!("{}", e);
+            Ok((
+                StatusCode::BAD_REQUEST,
+                Json(json!( { "message": "Username is already in use" } ))
+            ))
+        },
+
+        Err(AuthError::EmailAlreadyExists(e)) => {
+            log::warn!("{}", e);
+            Ok((
+                StatusCode::BAD_REQUEST,
+                Json(json!( { "message": "Email is already in use" } ))
+            ))
+        },
     }
 
     /*
