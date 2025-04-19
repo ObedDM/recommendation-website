@@ -3,7 +3,7 @@ use dotenvy::dotenv;
 use std::env::var;
 use axum::{serve, Router};
 
-use crate::routes::create_router;
+use crate::routes::routes::create_router;
 
 pub async fn run_server() {
     // Open .env
