@@ -12,7 +12,7 @@ pub fn create_router() -> Router {
         .allow_headers([header::CONTENT_TYPE]);
 
     Router::new()
-        .route("/auth/signup", post(auth::register_user))
-        .route("/auth/login", post(auth::auth_user))
+        .route("/auth/signup", post(auth::signup))
+        .route("/auth/login", post(auth::login))
         .layer(cors_layer)
 }
