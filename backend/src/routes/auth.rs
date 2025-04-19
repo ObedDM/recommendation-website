@@ -1,24 +1,50 @@
-use axum::{Json, http::StatusCode};
-use serde_json::json;
-use crate::models::user::UserCredentials;
+use axum::{http::StatusCode, Json};
+use serde_json::{json, Value};
+use log;
 
-pub async fn auth_user(user: Json<UserCredentials>) -> Result<(StatusCode, String), (StatusCode, String)> {
+use crate::models::user::UserCredentials;
+use crate::services::auth::auth;
+use crate::services::auth::errors::AuthError;
+
+pub async fn login(user: Json<UserCredentials>) -> Result<(StatusCode, Json<Value>), (StatusCode, String)> {
     
     Ok((
         StatusCode::OK,
-        json!( {"credentials": {
-                    "user": user.username, "email": user.email, "password": user.password
-                }
-        } ).to_string()
+        Json(json!(
+            {"credentials": {
+                "user": user.username, "email": user.email, "password": user.password
+            }
+        } ))
     ))
 }
 
-pub async fn register_user(user: Json<UserCredentials>) -> Result<(StatusCode, String), (StatusCode, String)> {
+pub async fn signup(Json(user): Json<UserCredentials>) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
 
-    Ok((
-        StatusCode::OK,
-        json!( {"message": "cruella"} ).to_string()
-    ))
+    match auth::create_user(user).await {
+        Ok(message) => {
+            log::info!("{}", message);
+            Ok((
+                StatusCode::OK,
+                Json(json!({ "message": message }))
+            ))
+        },
+
+        Err(AuthError::PasswordHashingError(e)) => {
+            log::error!("{}", e);
+            Ok((
+                StatusCode::BAD_REQUEST,
+                Json(json!({ "message": "Failed to sign up user. Please try again later" }))
+            ))
+        },
+
+        Err(AuthError::DatabaseCreateUserError(e)) => {
+            log::error!("{}", e);
+            Ok((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "message": "Unexpected error ocurred. Please try againt later" }))
+            ))
+        },
+    }
 
     /*
     1.- Get user information (via JSON)
