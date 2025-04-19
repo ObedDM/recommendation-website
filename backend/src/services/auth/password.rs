@@ -5,7 +5,7 @@ pub fn generate_password(password: &str) -> Result<String, String> {
 
     match hash(password, COST) {
         Ok(hashed_password) => Ok(hashed_password),
-        Err(e) => Err(format!("Failed to hash password: {}", e))
+        Err(e) => Err(e.to_string())
     }
 }
 
@@ -13,6 +13,6 @@ pub fn check_password(password: &str, hash: &str) -> Result<bool, String> {
 
     match verify(password, hash) {
         Ok(is_password) => Ok(is_password),
-        Err(e) => Err(format!("Failed to verify password: {}", e))
+        Err(e) => Err(e.to_string())
     }
 }
