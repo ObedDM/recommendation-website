@@ -1,3 +1,4 @@
+use sea_orm::DatabaseConnection;
 use tokio::{net::TcpListener, signal, sync::oneshot};
 use dotenvy::dotenv;
 use std::env::var;
@@ -5,7 +6,7 @@ use axum::{serve, Router};
 
 use crate::routes::routes::create_router;
 
-pub async fn run_server() {
+pub async fn run_server(db: DatabaseConnection) {
     // Open .env
     dotenv().expect("Cannot access .env file");
     let SERVER_ADDRESS = var("SERVER_ADDRESS").unwrap_or("127.0.0.1:3000".to_string());
@@ -30,7 +31,7 @@ pub async fn run_server() {
     println!("Listening on: {}", listener.local_addr().unwrap());
 
     // Create Router
-    let app: Router = create_router();
+    let app: Router = create_router(db);
 
     tokio::select! {
         _ = serve(listener, app) => {},
