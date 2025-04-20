@@ -29,7 +29,7 @@ pub async fn signup(Json(user): Json<UserCredentials>) -> Result<(StatusCode, Js
             ))
         },
 
-        Err(AuthError::PasswordHashingError(e)) => {
+        Err(e @ AuthError::PasswordHashingError(_)) => {
             log::error!("{}", e);
             Ok((
                 StatusCode::BAD_REQUEST,
@@ -37,7 +37,7 @@ pub async fn signup(Json(user): Json<UserCredentials>) -> Result<(StatusCode, Js
             ))
         },
 
-        Err(AuthError::DatabaseCreateUserError(e)) => {
+        Err(e @ AuthError::DatabaseCreateUserError(_)) => {
             log::error!("{}", e);
             Ok((
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -45,7 +45,7 @@ pub async fn signup(Json(user): Json<UserCredentials>) -> Result<(StatusCode, Js
             ))
         },
 
-        Err(AuthError::UsernameAlreadyExists(e)) => {
+        Err(e @ AuthError::UsernameAlreadyExists(_)) => {
             log::warn!("{}", e);
             Ok((
                 StatusCode::BAD_REQUEST,
@@ -53,7 +53,7 @@ pub async fn signup(Json(user): Json<UserCredentials>) -> Result<(StatusCode, Js
             ))
         },
 
-        Err(AuthError::EmailAlreadyExists(e)) => {
+        Err(e @ AuthError::EmailAlreadyExists(_)) => {
             log::warn!("{}", e);
             Ok((
                 StatusCode::BAD_REQUEST,
@@ -61,11 +61,4 @@ pub async fn signup(Json(user): Json<UserCredentials>) -> Result<(StatusCode, Js
             ))
         },
     }
-
-    /*
-    1.- Get user information (via JSON)
-    2.- Verify if the username, email dont exist in the database (return err)
-    3.- call passwordEncryption::generate_password() to create a hash for the password
-    4.- insert user, email, password into database (return Ok)
-    */
 }
