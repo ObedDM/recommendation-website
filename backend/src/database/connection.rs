@@ -1,12 +1,16 @@
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use dotenvy::dotenv;
-use std::env::var;
+use std::{env::var, time::Duration};
 
 pub async fn pg_connection() -> DatabaseConnection {
     dotenv().expect("Cannot access .env file");
     let DATABASE_URL = var("DATABASE_URL").expect("Database URL was not set in the environment");
 
-    let db: DatabaseConnection = Database::connect(DATABASE_URL).await.expect("Cannot connect to database");
-
-    return db
+    let mut opt = ConnectOptions::new(DATABASE_URL);
+    opt.max_connections(16)
+        .min_connections(1)
+        .connect_timeout(Duration::from_secs(8))
+        .sqlx_logging(true);
+    
+    Database::connect(opt).await.expect("Cannot connect to database")
 }
