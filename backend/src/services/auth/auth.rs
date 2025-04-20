@@ -22,10 +22,18 @@ pub async fn create_user(user: UserCredentials) -> Result<String, AuthError> {
         country: Set(user.country),
     };
     
-    new_user.insert(&db).await.
-        map_err(
-            |e| AuthError::DatabaseCreateUserError(e.to_string())
-        )?;
-
-    Ok("User created succesfully".to_string())
+    match new_user.insert(&db).await {
+        Ok(_) => Ok("User created succesfully".to_string()),
+        Err(e) => {
+            let err = e.to_string();
+            
+            if err.contains("user_email_key") {
+                Err(AuthError::EmailAlreadyExists(err + "ASAS"))
+            } else if err.contains("user_username_key") {
+                Err(AuthError::UsernameAlreadyExists(err))
+            } else {
+                Err(AuthError::DatabaseCreateUserError(err))
+            }
+        }
+    }
 }
