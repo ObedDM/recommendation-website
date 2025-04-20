@@ -1,7 +1,7 @@
 use bcrypt::{hash, verify};
 
 pub fn generate_password(password: &str) -> Result<String, String> {
-    const COST: u32 = 13;
+    const COST: u32 = 12;
 
     match hash(password, COST) {
         Ok(hashed_password) => Ok(hashed_password),
