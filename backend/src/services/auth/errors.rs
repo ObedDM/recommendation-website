@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum AuthError {
+pub enum SignupAuthError {
     #[error("Failed to hash password: {0}")]
     PasswordHashingError(String),
 
@@ -13,4 +13,19 @@ pub enum AuthError {
 
     #[error("Failed to create user. Email already registered: {0}")]
     EmailAlreadyExists(String),
+}
+
+#[derive(Error, Debug)]
+pub enum LoginAuthError {
+    #[error("Password does not match")]
+    PasswordMatchError,
+
+    #[error("Failed to verify password: {0}")]
+    PasswordVerificationError(String),
+
+    #[error("Failed to verify user credentials: {0}")]
+    DatabaseVerifyUserError(String),
+
+    #[error("No password found for user. User might not exist")]
+    UserNotFound,
 }
