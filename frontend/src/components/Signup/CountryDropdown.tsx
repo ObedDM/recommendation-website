@@ -2,11 +2,18 @@ import { useMemo, useState } from "react"
 import Select from 'react-select'
 import countryList, { CountryOption } from 'react-select-country-list'
 
-export default function CountryDropdown() {
+interface CountryDropdownProp {
+    onCountryChange: (country: CountryOption | null) => void;
+}
+
+export default function CountryDropdown({ onCountryChange }: CountryDropdownProp) {
     const options = useMemo(() => countryList().getData(), [])
     const[value, setValue] = useState<CountryOption | null>(null)
 
-    const changeHandler = (value: CountryOption | null) => setValue(value)
+    function getCountry(country: CountryOption | null) {
+        setValue(country)
+        onCountryChange(country)
+    }
 
     return (
         <Select
@@ -29,6 +36,6 @@ export default function CountryDropdown() {
             placeholder="Select a country"
             options={options}
             value={value}
-            onChange={changeHandler} />
+            onChange={getCountry} />
     )
 }
