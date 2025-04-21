@@ -1,6 +1,7 @@
 import { useState } from "react";
 import GradientButton from "../customButtons/GradientButton";
 import CountryDropdown from "./CountryDropdown";
+import { CountryOption } from "react-select-country-list";
 
 interface SignupPanelProps {
     buttonSignUp: string[]
@@ -10,6 +11,40 @@ export default function SignupPanel({ buttonSignUp }: SignupPanelProps) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
+    const [country, setCountry] = useState<CountryOption | null>(null);
+
+    async function handleSignup() {
+
+        if (country === null) {
+            console.error("country must be set")
+            return
+        }
+
+        try {
+            const response = await fetch("http://127.0.0.1:5050/auth/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "username": username,
+                    "email": email,
+                    "password": password,
+                    "country": country.value
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                console.log(result.message)
+            } else {
+                console.warn(result.message)
+            }
+        } catch (err) {
+            console.error("Error signing up:", err)
+        }
+    }
 
     function getUsername(e: React.ChangeEvent<HTMLInputElement>) {
         setUsername(e.target.value);
@@ -22,6 +57,12 @@ export default function SignupPanel({ buttonSignUp }: SignupPanelProps) {
     function getEmail(e: React.ChangeEvent<HTMLInputElement>) {
         setEmail(e.target.value)
     }
+
+    function getCountry(country: CountryOption | null) {
+        setCountry(country)
+    }
+
+
 
     return (
                 <div className="absolute top-1/2 right-1/8 transform -translate-y-1/2">
@@ -48,7 +89,8 @@ export default function SignupPanel({ buttonSignUp }: SignupPanelProps) {
 
                         <label className="text-[20px]"> Country </label>                        
                         <div className="text-[19px] w-full mt-1 mb-12 shadow-[0_2px_4px_0_rgba(0,0,0,.15)]">
-                            <CountryDropdown />
+                            <CountryDropdown 
+                                onCountryChange={getCountry}/>
                         </div>
                         
                         <div className="flex items-center">
@@ -59,7 +101,7 @@ export default function SignupPanel({ buttonSignUp }: SignupPanelProps) {
                             <GradientButton
                                 text={buttonSignUp[0]}
                                 gradientClass={buttonSignUp[1]}
-                                onClick={() => {}}/>
+                                onClick={handleSignup}/>
                         </div>
 
                         {/*
