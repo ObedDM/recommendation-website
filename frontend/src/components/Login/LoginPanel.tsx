@@ -11,9 +11,29 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount }: LoginPa
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    function handleLogin() {
-        console.log('Username:', username);
-        console.log('Password:', password);
+    async function handleLogin() {
+        try {
+            const response = await fetch("http://localhost:5050/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "username": username,
+                    "password": password
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                console.log(result.message)
+            } else {
+                console.warn(result.message)
+            }
+        } catch (err) {
+            console.error("Error logging in:", err)
+        }
     }
 
     function getUsername(e: React.ChangeEvent<HTMLInputElement>) {
