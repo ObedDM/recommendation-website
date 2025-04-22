@@ -21,3 +21,4 @@ build/
 
 .env*
 *.py
+*.txt
