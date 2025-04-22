@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "./components/customButtons/buttonStyles.css";
+@import "./components/Other/customButtons/buttonStyles.css";
 
 @theme {
     --font-family-sans: "Inter", sans-serif;
