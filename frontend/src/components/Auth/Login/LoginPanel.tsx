@@ -1,12 +1,13 @@
 import { useState } from "react"
-import GradientButton from "../customButtons/GradientButton"
+import GradientButton from "../../Other/customButtons/GradientButton";
 
 interface LoginPanelProps {
     buttonLogIn: string[]
     buttonCreateAccount: string[]
+    onSwitch: () => void;
 }
 
-export default function LoginPanel({ buttonLogIn, buttonCreateAccount }: LoginPanelProps) {
+export default function LoginPanel({ buttonLogIn, buttonCreateAccount, onSwitch }: LoginPanelProps) {
     
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -80,7 +81,7 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount }: LoginPa
                     <GradientButton
                         text={buttonCreateAccount[0]}
                         gradientClass={buttonCreateAccount[1]}
-                        onClick={() => {}}/>
+                        onClick={onSwitch}/>
                 </div>
             </div>
         </div>

@@ -1,13 +1,14 @@
 import { useState } from "react";
-import GradientButton from "../customButtons/GradientButton";
 import CountryDropdown from "./CountryDropdown";
 import { CountryOption } from "react-select-country-list";
+import GradientButton from "../../Other/customButtons/GradientButton";
 
 interface SignupPanelProps {
     buttonSignUp: string[]
+    onSwitch: () => void;
 }
 
-export default function SignupPanel({ buttonSignUp }: SignupPanelProps) {
+export default function SignupPanel({ buttonSignUp, onSwitch }: SignupPanelProps) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -62,8 +63,6 @@ export default function SignupPanel({ buttonSignUp }: SignupPanelProps) {
         setCountry(country)
     }
 
-
-
     return (
                 <div className="absolute top-1/2 right-1/8 transform -translate-y-1/2">
                     <div className="bg-white w-[510px] h-[620px] px-15 py-11 rounded-[20px] shadow-[0_5px_20px_0_rgba(0,0,0,0.25)]">
@@ -95,31 +94,17 @@ export default function SignupPanel({ buttonSignUp }: SignupPanelProps) {
                         
                         <div className="flex items-center">
                             <span className="text-[17px] text-[#A0A0A0] mr-1"> Already have an account? </span>
-                            <a className="text-[17px] text-[#5500FF] hover:font-semibold hover:underline grow cursor-pointer"> Log in </a>
+                            <a onClick={onSwitch}
+                                className="text-[17px] text-[#5500FF] hover:font-semibold hover:underline grow cursor-pointer">
+                                    Log in
+                            </a>
                     
-                            {/* Sign up in button */}
+                            {/* Sign up button */}
                             <GradientButton
                                 text={buttonSignUp[0]}
                                 gradientClass={buttonSignUp[1]}
                                 onClick={handleSignup}/>
                         </div>
-
-                        {/*
-                        <div className="flex items-center mt-4">
-                            <hr className="grow border-[#A0A0A0]" />
-                                <span className="font-medium text-[#A0A0A0] p-4"> New here? </span>
-                            <hr className="grow border-[#A0A0A0]" />
-                        </div>
-                        */}
-        
-                        {/* Create Account button
-                        <div className="flex justify-center mt-4">
-                            <GradientButton
-                                text={buttonCreateAccount[0]}
-                                gradientClass={buttonCreateAccount[1]}
-                                onClick={() => {}}/>
-                        </div>
-                        */}
                     </div>
                 </div>
     )
