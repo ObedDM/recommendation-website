@@ -1,99 +1,120 @@
-use axum::extract::State;
-use axum::{http::StatusCode, Json};
+use axum::{
+    extract::{Json, State},
+    http::{header::SET_COOKIE, HeaderMap, HeaderValue, StatusCode},
+    response::{IntoResponse, Response},
+};
 use sea_orm::DatabaseConnection;
 use serde_json::{json, Value};
 use log;
 
 use crate::models::user::{LoginCredentials, SignupCredentials};
+use crate::utils::cookies::create_jwt_cookie;
 use crate::services::auth::auth;
 use crate::services::auth::errors::{SignupAuthError, LoginAuthError};
 
-pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginCredentials>) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
-    
-    match auth::verify_user(user, &db).await {
+/// Login handler
+pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginCredentials>) -> Result<impl IntoResponse, (StatusCode, Json<Value>)> {
+    match auth::verify_user(&user, &db).await {
         Ok(message) => {
             log::info!("{}", message);
-            Ok((
-                StatusCode::OK,
-                Json(json!({ "message": message }))
-            ))
-        },
+            // Manage Token cookies sent to browser 
+            match create_jwt_cookie(user, &db).await {
+                Ok(cookie) => {
+                    let mut headers = HeaderMap::new();
+                    headers.insert(
+                        SET_COOKIE,
+                        HeaderValue::from_str(&cookie.to_string()).unwrap(),
+                    );
+
+                    let body = Json(json!({ "message": "Login successful" }));
+
+                    Ok((headers, body))
+                }
+                Err(e) => {
+                    log::error!("{}", e);
+                    Err((
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(json!({ "message": "Unexpected error occurred. Please try again later." })),
+                    ))
+                }
+            }
+        }
 
         Err(e @ LoginAuthError::PasswordMatchError) => {
             log::warn!("{}", e);
-            Ok((
+            Err((
                 StatusCode::UNAUTHORIZED,
-                Json(json!({ "message": "Password does not match. Please try a different password." }))
+                Json(json!({ "message": "Password does not match. Please try a different password." })),
             ))
-        },
+        }
 
         Err(e @ LoginAuthError::PasswordVerificationError(_)) => {
             log::error!("{}", e);
-            Ok((
+            Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({ "message": "Unexpected error ocurred. Please try againt later." }))
+                Json(json!({ "message": "Unexpected error occurred. Please try again later." })),
             ))
-        },
+        }
 
         Err(e @ LoginAuthError::DatabaseVerifyUserError(_)) => {
             log::error!("{}", e);
-            Ok((
+            Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({ "message": "Unexpected error ocurred. Please try againt later." }))
+                Json(json!({ "message": "Unexpected error occurred. Please try again later." })),
             ))
-        },
+        }
 
         Err(e @ LoginAuthError::UserNotFound) => {
             log::warn!("{}", e);
-            Ok((
+            Err((
                 StatusCode::UNAUTHORIZED,
-                Json(json!({ "message": "User was not found. Please try a different username" }))
+                Json(json!({ "message": "User was not found. Please try a different username." })),
             ))
-        },
+        }
     }
 }
 
-pub async fn signup(State(db): State<DatabaseConnection>, Json(user): Json<SignupCredentials>,) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
-
+/// Signup handler
+pub async fn signup(State(db): State<DatabaseConnection>, Json(user): Json<SignupCredentials>) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
     match auth::create_user(user, &db).await {
         Ok(message) => {
             log::info!("{}", message);
             Ok((
                 StatusCode::OK,
-                Json(json!({ "message": message }))
+                Json(json!({"message": message }))
             ))
-        },
+        }
 
         Err(e @ SignupAuthError::PasswordHashingError(_)) => {
             log::error!("{}", e);
-            Ok((
+            Err((
                 StatusCode::BAD_REQUEST,
-                Json(json!({ "message": "Failed to sign up user. Please try again later." }))
+                Json(json!({ "message": "Failed to sign up user. Please try again later." })),
             ))
-        },
+        }
 
         Err(e @ SignupAuthError::DatabaseCreateUserError(_)) => {
             log::error!("{}", e);
-            Ok((
+            Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({ "message": "Unexpected error ocurred. Please try againt later." }))
+                Json(json!({ "message": "Unexpected error occurred. Please try again later." })),
             ))
-        },
+        }
 
         Err(e @ SignupAuthError::UsernameAlreadyExists(_)) => {
             log::warn!("{}", e);
-            Ok((
+            Err((
                 StatusCode::BAD_REQUEST,
-                Json(json!( { "message": "Username is already in use." } ))
+                Json(json!({ "message": "Username is already in use." })),
             ))
-        },
+        }
 
         Err(e @ SignupAuthError::EmailAlreadyExists(_)) => {
             log::warn!("{}", e);
-            Ok((
+            Err((
                 StatusCode::BAD_REQUEST,
-                Json(json!( { "message": "Email is already in use." } ))
+                Json(json!({ "message": "Email is already in use." })),
             ))
-        },
+        }
     }
 }
