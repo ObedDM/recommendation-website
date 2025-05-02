@@ -1,5 +1,6 @@
 import { useState } from "react"
 import GradientButton from "../../Other/customButtons/GradientButton";
+import { useNavigate } from "react-router-dom";
 
 interface LoginPanelProps {
     buttonLogIn: string[]
@@ -11,11 +12,13 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount, onSwitch 
     
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     async function handleLogin() {
         try {
             const response = await fetch("http://localhost:5050/auth/login", {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -29,8 +32,13 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount, onSwitch 
 
             if (response.ok) {
                 console.log(result.message)
+
+                return true
+
             } else {
                 console.warn(result.message)
+
+                return false
             }
         } catch (err) {
             console.error("Error logging in:", err)
@@ -68,7 +76,13 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount, onSwitch 
                 <GradientButton
                     text={buttonLogIn[0]}
                     gradientClass={buttonLogIn[1]}
-                    onClick={handleLogin}/>
+                    route={null}
+                    onClick={async () => {
+                        const success = await handleLogin();
+                        if (success) {
+                            navigate("/home");
+                        }
+                    }}/>
 
                 <div className="flex items-center mt-4">
                     <hr className="grow border-[#A0A0A0]" />
@@ -81,6 +95,7 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount, onSwitch 
                     <GradientButton
                         text={buttonCreateAccount[0]}
                         gradientClass={buttonCreateAccount[1]}
+                        route={null}
                         onClick={onSwitch}/>
                 </div>
             </div>

@@ -3,10 +3,15 @@ import AuthBackground from "../../components/Other/Background/AuthBackground";
 import LoginPanel from "../../components/Auth/Login/LoginPanel";
 import SignupPanel from "../../components/Auth/Signup/SignupPanel";
 import LoginNavBar from "../../components/Auth/Login/LoginNavBar";
+import { useLocation } from "react-router-dom";
 
 export default function AuthPath() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const login = params.get("login");
+
   const navItems = ['PRICING', 'CONTACT', 'TERMS OF USE', 'API', 'COOKIES'];
-  const [showLogin, setShowLogin] = useState(true);
+  const [showLogin, setShowLogin] = useState(login !== "false");
   const [fade, setFade] = useState(false);
 
   const togglePanel = () => {
