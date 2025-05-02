@@ -18,6 +18,12 @@
         #00BBFF 360deg
         );
 }
+
+.custom-gradient-none {
+    background: white;
+    border: black;
+    color: black;
+}
   
 .glow-on-hover {
     transition: all 1s ease-out;
