@@ -15,7 +15,7 @@ pub async fn create_user(user: SignupCredentials, db: &DatabaseConnection) -> Re
     let new_user = user::ActiveModel {
         id: Set(Uuid::now_v7()),
         username: Set(user.username),
-        email: Set(user.email),
+        email: Set(user.email.to_lowercase()),
         password: Set(hashed_password),
         registration_date: Set(Utc::now().into()),
         country: Set(user.country),
@@ -27,7 +27,7 @@ pub async fn create_user(user: SignupCredentials, db: &DatabaseConnection) -> Re
             let err = e.to_string();
             
             if err.contains("user_email_key") {
-                Err(SignupAuthError::EmailAlreadyExists(err + "ASAS"))
+                Err(SignupAuthError::EmailAlreadyExists(err))
             } else if err.contains("user_username_key") {
                 Err(SignupAuthError::UsernameAlreadyExists(err))
             } else {
@@ -37,7 +37,7 @@ pub async fn create_user(user: SignupCredentials, db: &DatabaseConnection) -> Re
     }
 }
 
-pub async fn verify_user(user: LoginCredentials, db: &DatabaseConnection) -> Result<String, LoginAuthError> {
+pub async fn verify_user(user: &LoginCredentials, db: &DatabaseConnection) -> Result<String, LoginAuthError> {
 
     let db_password = user::Entity::find()
         .select_only()
@@ -56,7 +56,7 @@ pub async fn verify_user(user: LoginCredentials, db: &DatabaseConnection) -> Res
     };
 
     match password::check_password(user.password.as_str(), db_password.as_str()) {
-        Ok(true) => Ok("Login successful".to_string()),
+        Ok(true) => Ok("Login credentials successfully validated".to_string()),
         Ok(false) => Err(LoginAuthError::PasswordMatchError),
         Err(e) => Err(LoginAuthError::PasswordVerificationError(e)),
     }
