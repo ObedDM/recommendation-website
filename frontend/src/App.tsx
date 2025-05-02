@@ -1,8 +1,22 @@
+import RootBackground from "./components/Other/Background/RootBackground"
+import RootFrontMessage from "./components/Root/RootFrontMessage"
+import RootNavBar from "./components/Root/RootNavBar"
+
 function App() {
+
+  const items = ["PRICING", "CONTACT", "TERMS OF USE", "API", "COOKIES"]
+
   return (
-    <div className="h-full w-full bg-white">
-      <h1 className="text-black"> Hello World! </h1>
-    </div>
+    <>
+      <header>
+        <RootNavBar navItems={items}/> 
+      </header>
+
+      <main>
+        <RootBackground />
+        <RootFrontMessage />
+      </main>
+    </>
   )
 }
 
