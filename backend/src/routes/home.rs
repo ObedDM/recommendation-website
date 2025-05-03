@@ -5,7 +5,7 @@ use http::StatusCode;
 use sea_orm::DatabaseConnection;
 use serde_json::{json, Value};
 
-use super::jwt_handler::jwt_helper;
+use crate::utils::jwt_helper::jwt_helper;
 
 pub async fn home(State(db): State<DatabaseConnection>, TypedHeader(cookie_header): TypedHeader<Cookie>) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
     match jwt_helper(cookie_header, &db).await {
