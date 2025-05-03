@@ -18,7 +18,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
         Ok(message) => {
             log::info!("{}", message);
             // Manage Token cookies sent to browser 
-            match create_jwt_cookie(user, &db).await {
+            match create_jwt_cookie(&user, &db).await {
                 Ok(cookie) => {
                     let mut headers = HeaderMap::new();
                     headers.insert(
@@ -26,6 +26,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
                         HeaderValue::from_str(&cookie.to_string()).unwrap(),
                     );
 
+                    log::info!("User {} logged in successful", &user.username);
                     let body = Json(json!({ "message": "Login successful" }));
 
                     Ok((headers, body))

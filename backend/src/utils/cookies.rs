@@ -9,8 +9,8 @@ use crate::utils::jwt::encode_jwt;
 
 use super::errors::JWTError;
 
-pub async fn create_jwt_cookie(user: LoginCredentials, db: &DatabaseConnection) -> Result<Cookie, JWTError> {
-    match encode_jwt(user.username, &db).await {
+pub async fn create_jwt_cookie(user: &LoginCredentials, db: &DatabaseConnection) -> Result<Cookie<'static>, JWTError> {
+    match encode_jwt(user.username.clone(), &db).await {
         Ok(token) => {
 
             let cookie = CookieBuilder::new("Token", token)
