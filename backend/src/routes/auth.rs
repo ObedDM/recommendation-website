@@ -9,7 +9,7 @@ use sea_orm::DatabaseConnection;
 use serde_json::{json, Value};
 use log;
 
-use crate::{models::user::{LoginCredentials, SignupCredentials}, utils::jwt::encode_jwt};
+use crate::{models::user::{LoginCredentials, SignupCredentials}, utils::{cookies::build_cookie_header, errors::JWTError, jwt::encode_jwt}};
 use crate::utils::cookies::create_jwt_cookie;
 use crate::services::auth::auth;
 use crate::services::auth::errors::{SignupAuthError, LoginAuthError};
@@ -24,12 +24,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
             match encode_jwt(&user.username, None, &db).await {
                 Ok(token) => {
                     let cookie = create_jwt_cookie(token);
-
-                    let mut headers = HeaderMap::new();
-                    headers.insert(
-                        SET_COOKIE,
-                        HeaderValue::from_str(&cookie.to_string()).unwrap(),
-                    );
+                    let headers = build_cookie_header(cookie);
 
                     log::info!("User {} logged in successful", &user.username);
                     let body = Json(json!({ "message": "Login successful" }));
@@ -37,11 +32,43 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
                     Ok((headers, body))
                 },
         
-                Err(e) => {
+                Err(e @ JWTError::DatabaseVerifyUserError(_)) => {
                     log::error!("{}", e);
-                    Err((
+                    return Err((
                         StatusCode::INTERNAL_SERVER_ERROR,
-                        Json(json!({ "message": "Unexpected error occurred. Please try again later." })),
+                        Json(json!({ "message": "Unexpected error occurred. Please try again later." }))
+                    ))
+                },
+
+                Err(e @ JWTError::InvalidUserId(_)) => {
+                    log::warn!("{}", e);
+                    return Err((
+                        StatusCode::UNAUTHORIZED,
+                        Json(json!({ "message": "Invalid Token" }))
+                    ))
+                },
+
+                Err(e @ JWTError::UserIdDoestNotMatch) => {
+                    log::warn!("{}", e);
+                    return Err((
+                        StatusCode::UNAUTHORIZED,
+                        Json(json!({ "message": "Token payload does not match" }))
+                    ))
+                },
+
+                Err(e @ JWTError::UserNotFound) => {
+                    log::warn!("{}", e);
+                    Err((
+                        StatusCode::UNAUTHORIZED,
+                        Json(json!({ "message": "User was not found" })),
+                    ))
+                },
+    
+                Err(e) => {
+                    log::error!("Unexpected error: {}", e);
+                    return Err((
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(json!({ "message": "Unexpected error occurred. Please try again later." }))
                     ))
                 }
             }
