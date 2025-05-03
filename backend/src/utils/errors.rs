@@ -22,4 +22,13 @@ pub enum JWTError {
 
     #[error("Token has expired")]
     ExpiredToken,
+
+    #[error("User id doesnt not match when refreshing token")]
+    UserIdDoestNotMatch,
+
+    #[error("Failed to parse Token's user id from existing Token payload to uuid: ({0})")]
+    InvalidUserId(String),
+
+    #[error("Token's user id was not set in the Token's Payload")]
+    IdNotSetInToken,
 }
