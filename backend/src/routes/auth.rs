@@ -3,11 +3,13 @@ use axum::{
     http::{header::SET_COOKIE, HeaderMap, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
 };
+use axum_extra::TypedHeader;
+use headers::Cookie;
 use sea_orm::DatabaseConnection;
 use serde_json::{json, Value};
 use log;
 
-use crate::models::user::{LoginCredentials, SignupCredentials};
+use crate::{models::user::{LoginCredentials, SignupCredentials}, utils::jwt::encode_jwt};
 use crate::utils::cookies::create_jwt_cookie;
 use crate::services::auth::auth;
 use crate::services::auth::errors::{SignupAuthError, LoginAuthError};
@@ -18,8 +20,11 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
         Ok(message) => {
             log::info!("{}", message);
             // Manage Token cookies sent to browser 
-            match create_jwt_cookie(&user, &db).await {
-                Ok(cookie) => {
+
+            match encode_jwt(&user.username, None, &db).await {
+                Ok(token) => {
+                    let cookie = create_jwt_cookie(token);
+
                     let mut headers = HeaderMap::new();
                     headers.insert(
                         SET_COOKIE,
@@ -30,7 +35,8 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
                     let body = Json(json!({ "message": "Login successful" }));
 
                     Ok((headers, body))
-                }
+                },
+        
                 Err(e) => {
                     log::error!("{}", e);
                     Err((
@@ -40,7 +46,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
                 }
             }
         }
-
+    
         Err(e @ LoginAuthError::PasswordMatchError) => {
             log::warn!("{}", e);
             Err((

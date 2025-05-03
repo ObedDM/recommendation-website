@@ -6,11 +6,15 @@ use uuid::Uuid;
 use crate::utils::{errors::JWTError, jwt::decode_jwt};
 use crate::models::jwt::Payload;
 
-pub async fn auth_token(cookie_header: Cookie, db: &DatabaseConnection) -> Result<Payload, JWTError> {
-    let token = cookie_header
+pub fn get_token(cookie_header: Cookie) -> String {
+    cookie_header
         .get("Token")
         .unwrap_or("")
-        .to_string();
+        .to_string()
+}
+
+pub async fn auth_token(cookie_header: Cookie, db: &DatabaseConnection) -> Result<Payload, JWTError> {
+    let token = get_token(cookie_header.clone());
 
     println!("Full header = {:?}", cookie_header);
     println!("Token = {}", token);

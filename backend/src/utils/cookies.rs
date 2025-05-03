@@ -1,28 +1,22 @@
-use axum::{extract::Json, http::{header, HeaderMap, HeaderValue, Response, StatusCode}, response::IntoResponse};
+use axum::http::{HeaderMap, HeaderValue};
 use cookie::{Cookie, CookieBuilder, SameSite};
-use sea_orm::DatabaseConnection;
-use serde_json::{json, Value};
-use log;
+use http::header::SET_COOKIE;
+ 
+pub fn create_jwt_cookie(token: String) -> Cookie<'static> {
+    CookieBuilder::new("Token", token)
+        .http_only(true)
+        .secure(false) //<-- Set this in production with HTTPS
+        .same_site(SameSite::Lax) //<-- Change this in production
+        .path("/")
+        .finish()
+}
 
-use crate::models::user::LoginCredentials;
-use crate::utils::jwt::encode_jwt;
+pub fn build_cookie_header(cookie: Cookie<'static>) -> HeaderMap {
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        SET_COOKIE,
+        HeaderValue::from_str(&cookie.to_string()).unwrap(),
+    );
 
-use super::errors::JWTError;
-
-pub async fn create_jwt_cookie(user: &LoginCredentials, db: &DatabaseConnection) -> Result<Cookie<'static>, JWTError> {
-    match encode_jwt(user.username.clone(), &db).await {
-        Ok(token) => {
-
-            let cookie = CookieBuilder::new("Token", token)
-                .http_only(true)
-                .secure(false) //<-- Set this in production with HTTPS
-                .same_site(SameSite::Lax) //<-- Change this in production
-                .path("/")
-                .finish();
-                               
-                Ok(cookie)
-        },
-
-        Err(e) => Err(e)
-    }
+    return headers
 }
