@@ -1,37 +1,31 @@
+import User from "../../types/user";
+import Unauthorized from "../../components/Unauthorized/Unauthorized";
+import HomePage from "../../components/Home/HomePage";
+import useAuth from "../../hooks/useAuth";
+
 export default function HomePath() {
+    const { data: user, error, loading } = useAuth<User>("/gethome", {
+        method: "GET"
+    });
 
-    async function getHome() {
-        try {
-            const response = await fetch("http://localhost:5050/gethome", {
-                method: "GET",
-                credentials: "include"
-            });
+    if (loading) {
+        return <div>Loading...</div>
+    }
 
-            const result = await response.json();
-
-            if (response.ok) {
-                console.log(result)
-
-                return true
-
-            } else {
-                console.warn(result.message)
-
-                return false
-            }
-        } catch (err) {
-            console.error("Error getting /Home info", err)
-        }
+    if (error) {
+        console.warn(error);
+        return <Unauthorized />
     }
 
     return (
-        <div className="bg-white">
-            <h1 className="text-blue-500"> Welcome Home </h1>
-
-            <button onClick={getHome}>
-                ee
-            </button>
-
-        </div>
+        <>
+            {user ?
+                <HomePage 
+                    id={user.id}
+                    username={user.username}/>
+                :
+                <Unauthorized />
+            }
+        </>
     )
 }
