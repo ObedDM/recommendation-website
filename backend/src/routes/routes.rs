@@ -4,7 +4,7 @@ use axum::{middleware, routing::{get, post}, Extension, Router};
 use sea_orm::DatabaseConnection;
 use tower_http::cors::{CorsLayer, Any};
 use http::{header::{AUTHORIZATION, CONTENT_TYPE}, HeaderValue, Method};
-use super::{auth, home, refresh};
+use super::{auth, home, refresh, profile};
 
 pub fn create_router(db: DatabaseConnection) -> Router {
     let CLIENT_ADDRESS = var("CLIENT_ADDRESS").expect("Client address was not set in the environment");
@@ -17,6 +17,7 @@ pub fn create_router(db: DatabaseConnection) -> Router {
 
     let protected_routes = Router::new()
         .route("/gethome", get(home::home))
+        .route("/getprofile", get(profile::profile))
         .route("/auth/refresh", post(refresh::refresh));
 
     let public_routes = Router::new()
