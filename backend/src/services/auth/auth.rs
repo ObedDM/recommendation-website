@@ -2,8 +2,8 @@ use entity::user;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set, EntityTrait, ColumnTrait, QuerySelect, QueryFilter};
 use uuid::Uuid;
 use chrono::Utc;
-use super::{password, errors::{SignupAuthError, LoginAuthError}};
-use crate::models::user::{SignupCredentials, LoginCredentials};
+use super::{errors::{LoginAuthError, SignupAuthError}, password};
+use crate::{models::user::{LoginCredentials, SignupCredentials}, services::profile::profile::create_default_profile_picture};
 
 pub async fn create_user(user: SignupCredentials, db: &DatabaseConnection) -> Result<String, SignupAuthError> {
 
@@ -12,29 +12,40 @@ pub async fn create_user(user: SignupCredentials, db: &DatabaseConnection) -> Re
             |e| SignupAuthError::PasswordHashingError(e.to_string())
         )?;
 
+    let new_user_id: Uuid = Uuid::now_v7();
+
     let new_user = user::ActiveModel {
-        id: Set(Uuid::now_v7()),
+        id: Set(new_user_id),
         username: Set(user.username),
         email: Set(user.email.to_lowercase()),
         password: Set(hashed_password),
         registration_date: Set(Utc::now().into()),
         country: Set(user.country),
     };
-    
-    match new_user.insert(db).await {
-        Ok(_) => Ok("User created succesfully".to_string()),
-        Err(e) => {
-            let err = e.to_string();
-            
-            if err.contains("user_email_key") {
-                Err(SignupAuthError::EmailAlreadyExists(err))
-            } else if err.contains("user_username_key") {
-                Err(SignupAuthError::UsernameAlreadyExists(err))
-            } else {
-                Err(SignupAuthError::DatabaseCreateUserError(err))
-            }
+
+    new_user.insert(db).await
+    .map_err(|e| {
+        let err = e.to_string();
+
+        if err.contains("user_email_key") {
+            SignupAuthError::EmailAlreadyExists(err)
+        } else if err.contains("user_username_key") {
+            SignupAuthError::UsernameAlreadyExists(err)
+        } else {
+            SignupAuthError::DatabaseCreateUserError(err)
         }
+    })?;
+    
+    if let Err(picture_err) = create_default_profile_picture(new_user_id).await {
+        if let Err(delete_err) = user::Entity::delete_by_id(new_user_id).exec(db).await {
+            
+            return Err(SignupAuthError::UserCreationRollbackFailed(delete_err.to_string()))
+        }
+
+        return Err(SignupAuthError::ProfilePictureCreationFailed(picture_err.to_string()))
     }
+
+    Ok("User created successfully".to_string())
 }
 
 pub async fn verify_user(user: &LoginCredentials, db: &DatabaseConnection) -> Result<String, LoginAuthError> {

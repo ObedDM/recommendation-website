@@ -13,6 +13,12 @@ pub enum SignupAuthError {
 
     #[error("Failed to create user. Email already registered: {0}")]
     EmailAlreadyExists(String),
+
+    #[error("Failed to delete newly-created user as a rollback from creating profile picture error: {0}")]
+    UserCreationRollbackFailed(String),
+
+    #[error("Failed to create profile picture for newly-created user: {0}")]
+    ProfilePictureCreationFailed(String),
 }
 
 #[derive(Error, Debug)]

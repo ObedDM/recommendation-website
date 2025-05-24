@@ -34,7 +34,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
         
                 Err(e @ JWTError::DatabaseVerifyUserError(_)) => {
                     log::error!("{}", e);
-                    return Err((
+                    Err((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(json!({ "message": "Unexpected error occurred. Please try again later." }))
                     ))
@@ -42,7 +42,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
 
                 Err(e @ JWTError::InvalidUserId(_)) => {
                     log::warn!("{}", e);
-                    return Err((
+                    Err((
                         StatusCode::UNAUTHORIZED,
                         Json(json!({ "message": "Invalid Token" }))
                     ))
@@ -50,7 +50,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
 
                 Err(e @ JWTError::UserIdDoestNotMatch) => {
                     log::warn!("{}", e);
-                    return Err((
+                    Err((
                         StatusCode::UNAUTHORIZED,
                         Json(json!({ "message": "Token payload does not match" }))
                     ))
@@ -66,7 +66,7 @@ pub async fn login(State(db): State<DatabaseConnection>, Json(user): Json<LoginC
     
                 Err(e) => {
                     log::error!("Unexpected error: {}", e);
-                    return Err((
+                    Err((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(json!({ "message": "Unexpected error occurred. Please try again later." }))
                     ))
@@ -148,6 +148,22 @@ pub async fn signup(State(db): State<DatabaseConnection>, Json(user): Json<Signu
             Err((
                 StatusCode::BAD_REQUEST,
                 Json(json!({ "message": "Email is already in use." })),
+            ))
+        }
+
+        Err(e @ SignupAuthError::UserCreationRollbackFailed(_)) => {
+            log::warn!("{}", e);
+            Err((
+                StatusCode::OK,
+                Json(json!({ "message": "User created succesfully. Failed to create default profile picture" }))
+            ))
+        }
+
+        Err(e @ SignupAuthError::ProfilePictureCreationFailed(_)) => {
+            log::error!("{}", e);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "message": "Unexpected error occurred. Please try again later." })),
             ))
         }
     }
