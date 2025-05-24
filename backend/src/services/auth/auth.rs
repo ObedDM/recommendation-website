@@ -27,10 +27,10 @@ pub async fn create_user(user: SignupCredentials, db: &DatabaseConnection) -> Re
     .map_err(|e| {
         let err = e.to_string();
 
-        if err.contains("user_email_key") {
-            SignupAuthError::EmailAlreadyExists(err)
-        } else if err.contains("user_username_key") {
+        if err.contains("user_username_key") {
             SignupAuthError::UsernameAlreadyExists(err)
+        } else if err.contains("user_email_key") {
+            SignupAuthError::EmailAlreadyExists(err)
         } else {
             SignupAuthError::DatabaseCreateUserError(err)
         }
