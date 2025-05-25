@@ -32,13 +32,10 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount, onSwitch 
 
             if (response.ok) {
                 console.log(result.message)
-
-                return true
+                navigate("/home")
 
             } else {
                 console.warn(result.message)
-
-                return false
             }
         } catch (err) {
             console.error("Error logging in:", err)
@@ -77,12 +74,7 @@ export default function LoginPanel({ buttonLogIn, buttonCreateAccount, onSwitch 
                     text={buttonLogIn[0]}
                     gradientClass={buttonLogIn[1]}
                     route={null}
-                    onClick={async () => {
-                        const success = await handleLogin();
-                        if (success) {
-                            navigate("/home");
-                        }
-                    }}/>
+                    onClick={handleLogin}/>
 
                 <div className="flex items-center mt-4">
                     <hr className="grow border-[#A0A0A0]" />
