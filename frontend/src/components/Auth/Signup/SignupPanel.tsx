@@ -2,6 +2,7 @@ import { useState } from "react";
 import CountryDropdown from "./CountryDropdown";
 import { CountryOption } from "react-select-country-list";
 import GradientButton from "../../Other/customButtons/GradientButton";
+import { useNavigate } from "react-router-dom";
 
 interface SignupPanelProps {
     buttonSignUp: string[]
@@ -13,6 +14,7 @@ export default function SignupPanel({ buttonSignUp, onSwitch }: SignupPanelProps
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [country, setCountry] = useState<CountryOption | null>(null);
+    const navigate = useNavigate();
 
     async function handleSignup() {
 
@@ -38,10 +40,39 @@ export default function SignupPanel({ buttonSignUp, onSwitch }: SignupPanelProps
             const result = await response.json();
 
             if (response.ok) {
-                console.log(result.message)
+                console.log(result.message);
+
+                try {
+                    const response = await fetch("http://localhost:5050/auth/login", {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "username": username,
+                            "password": password
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        console.log(result.message)
+                        navigate("/home")
+
+                    } else {
+                        console.warn(result.message)
+                    }
+                    
+                } catch (err) {
+                    console.error("Error logging in:", err)
+                }                
+                
             } else {
-                console.warn(result.message)
+                console.warn(result.message);
             }
+
         } catch (err) {
             console.error("Error signing up:", err)
         }
@@ -103,7 +134,8 @@ export default function SignupPanel({ buttonSignUp, onSwitch }: SignupPanelProps
                             <GradientButton
                                 text={buttonSignUp[0]}
                                 gradientClass={buttonSignUp[1]}
-                                onClick={handleSignup}/>
+                                onClick={handleSignup}
+                                route={null}/>
                         </div>
                     </div>
                 </div>
