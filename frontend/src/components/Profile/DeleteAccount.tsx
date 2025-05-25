@@ -3,7 +3,7 @@ import GradientButton from "../Other/customButtons/GradientButton";
 export default function DeleteAccount() {
 
     async function deleteAccount() {
-        const response = await fetch("http://localhost:5050/profile/delete", {
+        const response = await fetch("http://localhost:5050/profile", {
             method: "DELETE",
             credentials: "include"
         });
