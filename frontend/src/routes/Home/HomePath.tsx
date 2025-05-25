@@ -4,7 +4,7 @@ import HomePage from "../../components/Home/HomePage";
 import useAuth from "../../hooks/useAuth";
 
 export default function HomePath() {
-    const { data: user, error, loading } = useAuth<User>("/gethome", {
+    const { data: user, error, loading } = useAuth<User>("/home", {
         method: "GET"
     });
 
