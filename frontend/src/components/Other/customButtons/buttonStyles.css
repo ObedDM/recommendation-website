@@ -24,6 +24,12 @@
     border: black;
     color: black;
 }
+
+.custom-gradient-delete {
+    background: white;
+    border: red;
+    color: red;
+}
   
 .glow-on-hover {
     transition: all 1s ease-out;
