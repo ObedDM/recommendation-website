@@ -12,11 +12,8 @@ pub enum ProfileDeleteError {
 #[derive(Error, Debug)]
 
 pub enum ProfilePictureError {
-    #[error("Failed to retrieve profile picture for {0}")]
-    PictureRetrievalFailed(String),
-
-    #[error("Failed to open file: {0}; at {1}")]
-    FileOpeningFailed(String, String),
+    #[error("Failed to open file {0}: {1}; at {2}. File might not exist")]
+    FileReadingFailed(String, String, String),
 
     #[error("Failed to save image {0}: {1}; at {2}")]
     ImageSavingFailed(String, String, String),
