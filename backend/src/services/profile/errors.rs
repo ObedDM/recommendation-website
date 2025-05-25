@@ -20,4 +20,16 @@ pub enum ProfilePictureError {
 
     #[error("Failed to decode image ({0}): {1}")]
     ImageDecodingFailed(String, String),
+
+    #[error("Error when trying to update file {0}: {1}; at {2}")]
+    ErrorUpdatingFile(String, String, String),
+
+    #[error("Multipart parsing failed: {0}")]
+    MultipartError(String),
+
+    #[error("Missing field `{0}` in multipart data")]
+    MissingField(String),
+
+    #[error("Failed to read bytes: {0}")]
+    ByteReadError(String),
 }

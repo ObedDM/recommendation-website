@@ -1,11 +1,11 @@
-use axum::{extract::{State}, response::Json};
+use axum::{extract::{Multipart, State}, response::Json};
 use axum_extra::TypedHeader;
 use headers::Cookie;
 use http::StatusCode;
 use sea_orm::DatabaseConnection;
 use serde_json::{json, Value};
 
-use crate::{services::profile::{errors::{ProfileDeleteError, ProfilePictureError}, profile::{delete_profile, get_profile_picture}}, utils::jwt_helper::jwt_helper};
+use crate::{services::profile::{errors::{ProfileDeleteError, ProfilePictureError}, profile::{delete_user_profile, get_profile_picture, update_profile_picture}}, utils::jwt_helper::jwt_helper};
 
 pub async fn get_profile(State(db): State<DatabaseConnection>, TypedHeader(cookie_header): TypedHeader<Cookie>) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
     match jwt_helper(cookie_header, &db).await {
@@ -66,9 +66,69 @@ pub async fn get_profile(State(db): State<DatabaseConnection>, TypedHeader(cooki
 
 
 
-pub async fn put_picture(State(db): State<DatabaseConnection>, TypedHeader(cookie_header): TypedHeader<Cookie>) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
-    todo!()
-    // USE SERVICE update_profile_picture AT services/profile/profile.rs
+pub async fn put_picture(State(db): State<DatabaseConnection>, TypedHeader(cookie_header): TypedHeader<Cookie>, mut image: Multipart) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
+    
+    match jwt_helper(cookie_header, &db).await {
+        Ok(payload) => {
+            log::info!("User token validated");
+
+            match payload.id {
+                Some(user_id) => {
+                    match update_profile_picture(user_id, image).await {
+                        Ok(message) => {
+                            log::info!("{}", message);
+                            Ok((
+                                StatusCode::OK,
+                                Json(json!({ "message": "User profile picture updated successfully" }))
+                            ))
+                        },
+                        
+                        Err(e @ ProfilePictureError::MultipartError(_)) => {
+                            log::warn!("{}", e);
+                            Err((
+                                StatusCode::BAD_REQUEST,
+                                Json(json!({ "message": "Missing image field" }))
+                            ))
+                        },
+
+                        Err(e @ ProfilePictureError::ByteReadError(_)) => {
+                            log::error!("{}", e);
+                            Err((
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                Json(json!({ "message": "Unexpected error occurred. Please try again later." }))
+                            ))
+                        },
+                        
+                        Err(e @ ProfilePictureError::ErrorUpdatingFile(_, _, _)) => {
+                            log::error!("{}", e);
+                            Err((
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                Json(json!({ "message": "Unexpected error occurred. Please try again later." }))
+                            ))
+                        },
+
+                        Err(e @ _) => {
+                            log::error!("{}", e);
+                            Err((
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                Json(json!({ "message": "Unexpected error occurred. Please try again later." }))
+                            ))
+                        }
+                    }
+                },
+
+                None => {
+                    log::error!("Invalid token: ID missing in payload");
+                    Err((
+                        StatusCode::UNAUTHORIZED,
+                        Json(json!({ "message": "Invalid token" }))
+                    ))
+                }
+            }
+        },
+
+        Err((error, message)) => Err((error, message))
+    }
 }
 
 pub async fn delete(State(db): State<DatabaseConnection>, TypedHeader(cookie_header): TypedHeader<Cookie>) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
@@ -79,7 +139,7 @@ pub async fn delete(State(db): State<DatabaseConnection>, TypedHeader(cookie_hea
 
             match payload.id {
                 Some(user_id) => {
-                    match delete_profile(user_id, &db).await {
+                    match delete_user_profile(user_id, &db).await {
                         Ok(message) => {
                             log::info!("{}", message);
                             Ok((
