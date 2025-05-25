@@ -1,24 +1,29 @@
+import { useState } from "react";
+import DeleteAccount from "./DeleteAccount";
+
 interface ProfilePageProps {
     username: string
 }
 
 export default function ProfilePage({ username }: ProfilePageProps) {
+    const [showDelete, setShowDelete] = useState(false);
+
+    function showDeletePanel() {
+        setShowDelete(true);
+    }
+
     return (
         <div className="min-h-screen w-screen bg-white flex">
-            <div className="bg-[#D9D9D9] w-[260px] p-4">
+            <div className="bg-[#D9D9D9] w-[260px] p-4 space-y-2 text-sm text-gray-600">
                 <input
                     type="text"
                     placeholder="Search"
-                    className="w-full p-1 mb-4 border rounded text-sm"
-                />
-                <ul className="space-y-2 text-sm text-gray-600">
-                    <li>My Profile</li>
-                    <li>Preferences</li>
-                    <li>Following</li>
-                    <li>Privacy</li>
-                    <li>Site Appearance</li>
-                    <li>Delete Account</li>
-                </ul>
+                    className="w-full p-1 mb-4 border rounded text-sm" />
+          
+
+                <button onClick={showDeletePanel}>
+                    Delete Account
+                </button>
             </div>
 
             <div className="flex-1 flex flex-col p-8">
@@ -48,6 +53,8 @@ export default function ProfilePage({ username }: ProfilePageProps) {
                     />
                 </div>
             </div>
+
+            {showDelete ? <DeleteAccount /> : null}
         </div>
     );
 }
