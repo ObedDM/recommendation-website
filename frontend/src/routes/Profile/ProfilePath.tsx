@@ -4,7 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import User from "../../types/user";
 
 export default function ProfilePath() {
-    const { data: user, error, loading } = useAuth<User>("/getprofile", {
+    const { data: user, error, loading } = useAuth<User>("/profile", {
         method: "GET"
     });
 
