@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from models import UserResponses
 
-class UserSerializer(serializers.ModelSerialzer):
-    class Meta:
-        model = UserResponses
-        fields = '__all__'
+class UserResponseSerializer(serializers.Serializer):
+    user_id = serializers.UUIDField()
+    username = serializers.CharField(max_length=18)
