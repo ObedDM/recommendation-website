@@ -20,5 +20,4 @@ build/
 *.sw?
 
 .env*
-*.py
 *.txt
