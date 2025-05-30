@@ -19,5 +19,6 @@ build/
 *.suo
 *.sw?
 
+__pycache__/
 .env*
 *.txt
