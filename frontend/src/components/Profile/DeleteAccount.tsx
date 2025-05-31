@@ -1,6 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import GradientButton from "../Other/customButtons/GradientButton";
 
 export default function DeleteAccount() {
+    const navigate = useNavigate();
 
     async function deleteAccount() {
         const response = await fetch("http://localhost:5050/profile", {
@@ -12,6 +14,7 @@ export default function DeleteAccount() {
 
         if (response.ok) {
             console.log(`success: ${result.message}`)
+            navigate("/auth?login=false")
         }
 
         else {
