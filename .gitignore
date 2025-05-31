@@ -25,3 +25,4 @@ __pycache__/
 
 Backend_django/api/services
 ML_model
+backend_axum/static/images
